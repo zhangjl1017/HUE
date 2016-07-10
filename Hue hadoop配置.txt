@@ -1,0 +1,173 @@
+2.2 /etc/hadoop/conf/hdfs-site.xml
+<property>
+  <name>dfs.webhdfs.enabled</name>
+  <value>true</value>
+</property>
+
+/etc/hadoop/conf/core-site.xml
+<property>
+  <name>hadoop.proxyuser.hue.hosts</name>
+  <value>*</value>
+</property>
+<property>
+  <name>hadoop.proxyuser.hue.groups</name>
+  <value>*</value>
+</property>
+
+//如果Hue Server服务器不在hadoop集群中，则需要启动HttpFS来连接
+/etc/hadoop-httpfs/conf/httpfs-site.xml 
+<property>
+  <name>httpfs.proxyuser.hue.hosts</name>
+  <value>*</value>
+</property>
+<property>
+  <name>httpfs.proxyuser.hue.groups</name>
+  <value>*</value>
+</property>
+
+Hue 只支持标准的hadooop api.
+Hue 与 JobTracker通过Hue plugins通信
+同一个机器
+$ cd /usr/share/hue
+$ cp desktop/libs/hadoop/java-lib/hue-plugins-*.jar /usr/lib/hadoop-0.20-mapreduce/lib
+复制插件到hadoop中
+
+不同机器
+使用 scp 把 Hue plugins jar 复制到 JobTracker host.
+然后编辑/etc/hadoop/conf/mapred-site.xml
+<property>
+  <name>jobtracker.thrift.address</name>
+  <value>0.0.0.0:9290</value>
+</property>
+<property>
+  <name>mapred.jobtracker.plugins</name>
+  <value>org.apache.hadoop.thriftfs.ThriftJobTrackerPlugin</value>
+  <description>Comma-separated list of jobtracker plug-ins to be activated.</description>
+</property>
+
+确定这些插件已经启动
+$ tail --lines=500 /var/log/hadoop-0.20/hadoop*jobtracker*.log | grep ThriftPlugin
+2009-09-28 16:30:44,337 INFO org.apache.hadoop.thriftfs.ThriftPluginServer: Starting Thrift server
+2009-09-28 16:30:44,419 INFO org.apache.hadoop.thriftfs.ThriftPluginServer:
+Thrift server listening on 0.0.0.0:9290
+
+Oozie http://www.infoq.com/cn/articles/introductionOozie/
+配置Oozie
+oozie-site.xml
+<property>
+    <name>oozie.service.ProxyUserService.proxyuser.hue.hosts</name>
+    <value>*</value>
+</property>
+<property>
+    <name>oozie.service.ProxyUserService.proxyuser.hue.groups</name>
+    <value>*</value>
+</property>
+
+2.3 HADOOP_CLASSPATH Caveat
+hadoop-env.sh,
+# HADOOP_CLASSPATH=<your_additions>:$HADOOP_CLASSPATH
+
+通过Hue与命令行提交作业
+core-site.xml
+<property>
+  <name>hadoop.tmp.dir</name>
+  <value>/tmp/hadoop-${user.name}${hue.suffix}</value>
+</property>
+
+防火墙设置
+机群必须对Hue TCP 8888开发
+
+2.4 Hive 配置 Hue支持Hive查询
+In hue.ini, modify hive_conf_dir to point to the directory containing hive-site.xml.
+
+
+
+3. Hue配置
+默认配置是伪分布机群，如果你跑在真实机群上，需要一些小的修改
+/etc/hue/hue.ini
+desktop/conf/pseudo-distributed.ini
+
+列出所有配置选项
+$ /usr/share/hue/build/env/bin/hue config_help | less
+
+查看当前配置选项
+http://<hue>/dump_config
+
+使用多文件存储配置
+Hue会合并在/etc/hue/*.ini下的 扩展名为.ini文件。
+
+3.1 web server 配置
+# Webserver listens on this address and port
+http_host=0.0.0.0
+http_port=8888
+
+Specifying the Secret Key
+secret_key=jFE93j;2[290-eiw.KEiwN2s3['d;/.q[eIW^y#e=+Iei*@Mn<qW5o
+权限，第一个登录Hue的为超级管理员，可以创建其它管理员，用户信息被存储在Django数据库中
+
+
+为SSL配置 Hue
+1、$ ./build/env/bin/easy_install pyOpenSSL 安装pyOpenSSL
+
+2、在hue.ini中配置证书与私钥
+ssl_certificate=/path/to/certificate
+ssl_private_key=/path/to/key
+
+3、
+### Create a key
+$ openssl genrsa 1024 > host.key
+### Create a self-signed certificate
+$ openssl req -new -x509 -nodes -sha1 -key host.key > host.cert
+
+3.2 Hue 为hadoop配置
+
+
+
+4 从Tarball启动Hue
+# build/env/bin/supervisor
+
+5、管理Hue
+5.3 Hue Database
+检查Hue 数据据
+# sqlite3 /usr/share/hue/desktop/desktop.db
+SQLite version 3.6.22
+Enter ".help" for instructions
+Enter SQL statements terminated with a ";"
+sqlite> select username from auth_user;
+admin
+test
+sample
+sqlite>
+
+Configuring Hue to Store Data in MySQL
+1、为Hue建数据库
+mysql> create database hue;
+Query OK, 1 row affected (0.01 sec)
+mysql> grant all on hue.* to 'hue'@'localhost' identified by 'secretpassword';
+Query OK, 0 rows affected (0.00 sec)
+2、关闭Hue,
+3、
+$ /usr/share/hue/build/env/bin/hue dumpdata > <some-temporary-file>.json
+4、编辑hue.ini
+host=localhost
+port=3306
+engine=mysql
+user=hue
+password=secretpassword
+name=hue
+5、
+$ /usr/share/hue/build/env/bin/hue syncdb --noinput
+$ mysql -uhue -psecretpassword -e "DELETE FROM hue.django_content_type;"
+$ /usr/share/hue/build/env/bin/hue loaddata <temporary-file-containing-dumped-data>.json
+
+
+6.0 使用Hue
+http://myserver:8888/.
+
+
+
+
+
+
+
+参考  http://cloudera.github.io/hue/docs-3.6.0/manual.html

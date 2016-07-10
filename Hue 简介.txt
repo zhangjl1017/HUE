@@ -1,0 +1,26 @@
+Hue 简介
+Hue是一个开源的Apache Hadoop UI系统，最早是由Cloudera Desktop演化而来，由Cloudera贡献给开源社区，它是基于Python Web框架Django实现的。通过使用Hue我们可以在浏览器端的Web控制台上与Hadoop集群进行交互来分析处理数据，例如操作HDFS上的数据，运行MapReduce Job等等。很早以前就听说过Hue的便利与强大，一直没能亲自尝试使用，下面先通过官网给出的特性，通过翻译原文简单了解一下Hue所支持的功能特性集合：
+
+默认基于轻量级sqlite数据库管理会话数据，用户认证和授权，可以自定义为MySQL、Postgresql，以及Oracle
+基于文件浏览器（File Browser）访问HDFS
+基于Hive编辑器来开发和运行Hive查询
+支持基于Solr进行搜索的应用，并提供可视化的数据视图，以及仪表板（Dashboard）
+支持基于Impala的应用进行交互式查询
+支持Spark编辑器和仪表板（Dashboard）
+支持Pig编辑器，并能够提交脚本任务
+支持Oozie编辑器，可以通过仪表板提交和监控Workflow、Coordinator和Bundle
+支持HBase浏览器，能够可视化数据、查询数据、修改HBase表
+支持Metastore浏览器，可以访问Hive的元数据，以及HCatalog
+支持Job浏览器，能够访问MapReduce Job（MR1/MR2-YARN）
+支持Job设计器，能够创建MapReduce/Streaming/Java Job
+支持Sqoop 2编辑器和仪表板（Dashboard）
+支持ZooKeeper浏览器和编辑器
+支持MySql、PostGresql、Sqlite和Oracle数据库查询编辑器
+下面，我们通过实际安装来验证Hue的一些功能。
+
+参考 http://ju.outofmemory.cn/entry/105162
+
+1、软件地址  https://github.com/cloudera/hue  
+2、维基百科  https://github.com/cloudera/hue/wiki
+3、安装手册 http://cloudera.github.io/hue/docs-3.5.0/manual.html
+4、软件开发工具包手册 http://cloudera.github.io/hue/docs-3.5.0/sdk/sdk.html
